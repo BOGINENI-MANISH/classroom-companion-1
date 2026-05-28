@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Companion — Teacher Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/teacher/style.css" />
+</head>
+<body>
+  <!-- ═══ LOGIN SCREEN ════════════════════════════════════════════════════════ -->
+  <div id="login-screen" class="screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="logo-icon">📚</span>
+        <h1 class="logo-text">Classroom Companion</h1>
+        <p class="logo-sub">Teacher Dashboard</p>
+      </div>
+      <form id="login-form">
+        <label for="teacher-id">Your Teacher ID</label>
+        <input
+          id="teacher-id"
+          type="number"
+          placeholder="e.g. 1"
+          min="1"
+          required
+          autocomplete="off"
+        />
+        <p class="hint">Your numeric DB id (shown in /mycode on Telegram)</p>
+        <button type="submit" class="btn btn-primary btn-full">Enter Dashboard</button>
+        <p id="login-error" class="error-msg hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN DASHBOARD ══════════════════════════════════════════════════════ -->
+  <div id="dashboard-screen" class="screen hidden">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo-icon-sm">📚</span>
+        <span class="topbar-title">Classroom Companion</span>
+      </div>
+      <div class="topbar-right">
+        <span id="teacher-name-display" class="teacher-badge"></span>
+        <span id="refresh-indicator" class="refresh-badge" title="Auto-refreshes every 30s">↻ live</span>
+        <button id="logout-btn" class="btn btn-ghost">Logout</button>
+      </div>
+    </header>
+
+    <!-- Stats bar -->
+    <section class="stats-bar">
+      <div class="stat-card" id="stat-students">
+        <span class="stat-value" id="stat-students-val">—</span>
+        <span class="stat-label">Students</span>
+      </div>
+      <div class="stat-card" id="stat-pending">
+        <span class="stat-value" id="stat-pending-val">—</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat-card" id="stat-progress">
+        <span class="stat-value" id="stat-progress-val">—</span>
+        <span class="stat-label">In Progress</span>
+      </div>
+      <div class="stat-card" id="stat-submitted">
+        <span class="stat-value" id="stat-submitted-val">—</span>
+        <span class="stat-label">Submitted</span>
+      </div>
+      <div class="stat-card" id="stat-reviewed">
+        <span class="stat-value" id="stat-reviewed-val">—</span>
+        <span class="stat-label">Reviewed</span>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls-bar">
+      <div class="controls-left">
+        <label for="filter-status" class="sr-only">Filter by status</label>
+        <select id="filter-status" class="select-input">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="submitted">Submitted</option>
+          <option value="reviewed">Reviewed</option>
+        </select>
+        <label for="filter-student" class="sr-only">Filter by student</label>
+        <select id="filter-student" class="select-input">
+          <option value="">All Students</option>
+        </select>
+      </div>
+      <div class="controls-right">
+        <button id="digest-btn" class="btn btn-accent">📊 AI Class Digest</button>
+      </div>
+    </section>
+
+    <!-- Assignment table -->
+    <section class="table-section">
+      <div class="table-wrapper">
+        <table id="assignment-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Assignment</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Days Left</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assignment-tbody">
+            <tr><td colspan="6" class="loading-row">Loading assignments…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══ AI SUMMARY MODAL ════════════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-title">AI Summary</h2>
+        <button id="modal-close" class="modal-close" aria-label="Close">✕</button>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/teacher/app.js"></script>
+</body>
+</html>
