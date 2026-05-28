@@ -57,14 +57,26 @@ const stripReviewed  = sv('strip-reviewed-val');
 // ── Login ─────────────────────────────────────────────────────────────────────
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const id = parseInt(studentIdInput.value.trim(), 10);
-  if (!id || id < 1) { showLoginError('Please enter a valid Student ID.'); return; }
+  const telegramId = parseInt(studentIdInput.value.trim(), 10);
+  if (!telegramId || telegramId < 1) { showLoginError('Please enter a valid Telegram ID.'); return; }
   try {
-    const res = await fetch(`/api/student/${id}/dashboard`);
-    if (!res.ok) { showLoginError('Student not found. Check your ID.'); return; }
+    // Resolve Telegram ID → DB record
+    const lookupRes = await fetch(`/api/user/by-telegram/${telegramId}`);
+    if (!lookupRes.ok) {
+      const body = await lookupRes.json().catch(() => ({}));
+      showLoginError(body.detail || 'User not found. Start the bot with /start on Telegram first.');
+      return;
+    }
+    const user = await lookupRes.json();
+    if (user.role !== 'student') {
+      showLoginError('This Telegram account is registered as a teacher, not a student.');
+      return;
+    }
+    const res = await fetch(`/api/student/${user.id}/dashboard`);
+    if (!res.ok) { showLoginError('Could not load dashboard.'); return; }
     const data = await res.json();
-    studentId = id;
-    sessionStorage.setItem('studentId', id);
+    studentId = user.id;
+    sessionStorage.setItem('studentId', user.id);
     studentNameDisplay.textContent = data.student_name;
     hideLoginError();
     showDashboard(data);
