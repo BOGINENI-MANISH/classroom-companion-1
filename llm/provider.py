@@ -32,6 +32,12 @@ class LLMProvider:
                 api_key=self.settings.grok_api_key,
                 base_url="https://api.x.ai/v1",
             )
+        elif provider == "groq":
+            # Groq inference platform (https://groq.com) — OpenAI-compatible
+            return AsyncOpenAI(
+                api_key=self.settings.grok_api_key,
+                base_url="https://api.groq.com/openai/v1",
+            )
         elif provider == "openai":
             return AsyncOpenAI(
                 api_key=self.settings.openai_api_key,
@@ -44,7 +50,7 @@ class LLMProvider:
         else:
             raise ValueError(
                 f"Unknown LLM provider: '{provider}'. "
-                "Supported values: grok, openai, gemini"
+                "Supported values: grok, groq, openai, gemini"
             )
 
     async def complete(

@@ -55,7 +55,7 @@ def create_app() -> FastAPI:
         )
 
     # ── Static files ──────────────────────────────────────────────────────────
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
     # ── Routers ───────────────────────────────────────────────────────────────
     app.include_router(health_router)

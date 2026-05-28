@@ -79,16 +79,33 @@ async def _start_ngrok(settings: Settings) -> str:
     """Start ngrok and return the public HTTPS URL."""
     try:
         from pyngrok import ngrok, conf
+        from urllib.parse import urlparse
 
         if settings.ngrok_auth_token:
             conf.get_default().auth_token = settings.ngrok_auth_token
 
+        # Reuse static domain when WEBHOOK_BASE_URL is already an ngrok URL
+        domain: str | None = None
+        if settings.webhook_base_url and "ngrok" in settings.webhook_base_url.lower():
+            domain = urlparse(settings.webhook_base_url).hostname
+
         # Run synchronous pyngrok call in a thread executor
         loop = asyncio.get_event_loop()
-        tunnel = await loop.run_in_executor(
-            None,
-            lambda: ngrok.connect(settings.app_port, "http"),
-        )
+        try:
+            tunnel = await loop.run_in_executor(
+                None,
+                lambda: ngrok.connect(settings.app_port, "http", **({"domain": domain} if domain else {})),
+            )
+        except Exception as domain_exc:
+            if domain:
+                logger.warning(f"ngrok static domain '{domain}' failed ({domain_exc}), retrying with random URL…")
+                tunnel = await loop.run_in_executor(
+                    None,
+                    lambda: ngrok.connect(settings.app_port, "http"),
+                )
+            else:
+                raise
+
         public_url: str = tunnel.public_url
         if public_url.startswith("http://"):
             public_url = public_url.replace("http://", "https://", 1)
