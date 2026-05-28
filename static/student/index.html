@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Companion — My Assignments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/student/style.css" />
+</head>
+<body>
+
+  <!-- ═══ CONFETTI CANVAS (hidden, activated on completion) ════════════════ -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- ═══ LOGIN SCREEN ════════════════════════════════════════════════════════ -->
+  <div id="login-screen" class="screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="logo-icon">🎓</span>
+        <h1 class="logo-text">Classroom Companion</h1>
+        <p class="logo-sub">My Assignments</p>
+      </div>
+      <form id="login-form">
+        <label for="student-id">Your Student ID</label>
+        <input
+          id="student-id"
+          type="number"
+          placeholder="e.g. 3"
+          min="1"
+          required
+          autocomplete="off"
+        />
+        <p class="hint">Your numeric DB id (ask your teacher or check /mystatus on Telegram)</p>
+        <button type="submit" class="btn btn-primary btn-full">View My Work</button>
+        <p id="login-error" class="error-msg hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN DASHBOARD ══════════════════════════════════════════════════════ -->
+  <div id="dashboard-screen" class="screen hidden">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo-icon-sm">🎓</span>
+        <span class="topbar-title">Classroom Companion</span>
+      </div>
+      <div class="topbar-right">
+        <span id="student-name-display" class="student-badge"></span>
+        <button id="logout-btn" class="btn btn-ghost btn-sm">Logout</button>
+      </div>
+    </header>
+
+    <!-- Progress summary strip -->
+    <section class="summary-strip">
+      <div class="strip-item" id="strip-total">
+        <span class="strip-value" id="strip-total-val">—</span>
+        <span class="strip-label">Total</span>
+      </div>
+      <div class="strip-item" id="strip-pending">
+        <span class="strip-value" id="strip-pending-val">—</span>
+        <span class="strip-label">Pending</span>
+      </div>
+      <div class="strip-item" id="strip-progress">
+        <span class="strip-value" id="strip-progress-val">—</span>
+        <span class="strip-label">In Progress</span>
+      </div>
+      <div class="strip-item" id="strip-submitted">
+        <span class="strip-value" id="strip-submitted-val">—</span>
+        <span class="strip-label">Submitted</span>
+      </div>
+      <div class="strip-item" id="strip-reviewed">
+        <span class="strip-value" id="strip-reviewed-val">—</span>
+        <span class="strip-label">Reviewed</span>
+      </div>
+    </section>
+
+    <!-- Filter tabs -->
+    <nav class="filter-tabs" role="tablist" aria-label="Filter assignments">
+      <button class="tab active" data-filter="all"        role="tab">All</button>
+      <button class="tab"        data-filter="pending"    role="tab">Pending</button>
+      <button class="tab"        data-filter="in_progress" role="tab">In Progress</button>
+      <button class="tab"        data-filter="submitted"  role="tab">Submitted</button>
+      <button class="tab"        data-filter="reviewed"   role="tab">Reviewed</button>
+    </nav>
+
+    <!-- Assignment cards grid -->
+    <main id="cards-grid" class="cards-grid" aria-label="Assignment cards">
+      <div class="loading-state">Loading your assignments…</div>
+    </main>
+  </div>
+
+  <!-- ═══ DETAIL MODAL ════════════════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="modal-title">Assignment</h2>
+          <p id="modal-teacher" class="modal-meta"></p>
+        </div>
+        <button id="modal-close" class="modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/student/app.js"></script>
+</body>
+</html>
