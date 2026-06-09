@@ -241,9 +241,13 @@ class StudentAgent(BaseAgent):
             file_info = f"\n📝 Content: \"{preview}\""
 
         teacher_msg = (
-            f"✅ *{student.full_name}* has submitted their work!\n"
-            f"📚 Assignment: {assignment.title}{file_info}\n\n"
-            f"Reply here with your feedback and I'll format and send it to them."
+            f"✅ *NEW SUBMISSION* from *{student.full_name}*\n"
+            f"📚 Assignment: *{assignment.title}*{file_info}\n\n"
+            f"📝 *How to respond:*\n"
+            f"• If there are mistakes, write: 'There are mistakes, please redo...'\n"
+            f"• If it's great, write: 'Great job! Well done...'\n"
+            f"• Or give specific feedback.\n\n"
+            f"I'll format it and send to {student.full_name} automatically."
         )
 
         self.logger.info(

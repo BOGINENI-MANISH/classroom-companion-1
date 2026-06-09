@@ -218,7 +218,12 @@ class TeacherAgent(BaseAgent):
     async def handle_feedback(
         self, teacher_telegram_id: int, assignment_id: int, raw_feedback: str
     ) -> AgentResponse:
-        """Format teacher feedback and send it to the student."""
+        """
+        Format teacher feedback and send it to the student.
+        Automatically determines assignment status based on feedback keywords:
+        - 'redo', 'again', 'mistakes', 'fix', 'review' → status = 'in_progress'
+        - 'great', 'perfect', 'ok', 'good', 'completed' → status = 'completed'
+        """
         teacher = await self._get_teacher(teacher_telegram_id)
         if not teacher:
             return self._error("❌ You are not registered as a teacher.")
@@ -239,7 +244,21 @@ class TeacherAgent(BaseAgent):
         # Step 1: format feedback via LLM
         formatted = await self._format_feedback(first_name, assignment.title, raw_feedback)
 
-        # Step 2: persist Feedback record
+        # Step 2: analyze feedback to determine new status
+        feedback_lower = raw_feedback.lower()
+        new_status = "reviewed"  # default
+        
+        # Keywords for "do again/in progress"
+        redo_keywords = ["redo", "again", "mistakes", "fix", "review", "revise", "needs work", "resubmit"]
+        # Keywords for "completed/great"
+        complete_keywords = ["great", "perfect", "ok", "good", "completed", "excellent", "well done", "amazing", "fantastic"]
+        
+        if any(kw in feedback_lower for kw in complete_keywords):
+            new_status = "completed"
+        elif any(kw in feedback_lower for kw in redo_keywords):
+            new_status = "in_progress"
+
+        # Step 3: persist Feedback record
         feedback = Feedback(
             assignment_id=assignment.id,
             teacher_id=teacher.id,
@@ -248,18 +267,27 @@ class TeacherAgent(BaseAgent):
         )
         self.db.add(feedback)
 
-        # Step 3: update assignment status
-        assignment.status = "reviewed"
+        # Step 4: update assignment status
+        assignment.status = new_status
         self.db.add(assignment)
         await self.db.flush()
 
         # Feedback message for student
-        student_msg = f"🌟 Feedback from your teacher on *{assignment.title}*:\n\n{formatted}"
+        status_emoji = "✅" if new_status == "completed" else "🔄"
+        student_msg = (
+            f"{status_emoji} Feedback from your teacher on *{assignment.title}*:\n\n"
+            f"{formatted}\n\n"
+        )
+        if new_status == "in_progress":
+            student_msg += "📝 Please revise and resubmit your work."
+        elif new_status == "completed":
+            student_msg += "🎉 Great job! You've completed this assignment."
 
         confirm_msg = f"✅ Feedback sent to {student.full_name}!"
 
         self.logger.info(
-            f"Feedback created: teacher={teacher.full_name}, student={student.full_name}"
+            f"Feedback created: teacher={teacher.full_name}, student={student.full_name}, "
+            f"status={new_status}"
         )
 
         return self._ok(
@@ -268,7 +296,7 @@ class TeacherAgent(BaseAgent):
             notify_telegram_id=student.telegram_id,
             notification_message=student_msg,
             state_transition="idle",
-            metadata={"assignment_id": assignment.id},
+            metadata={"assignment_id": assignment.id, "status": new_status},
         )
 
     async def _format_feedback(
