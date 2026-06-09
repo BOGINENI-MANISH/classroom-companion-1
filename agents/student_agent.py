@@ -260,6 +260,10 @@ class StudentAgent(BaseAgent):
             action="notify_teacher" if teacher_tid else "reply",
             notify_telegram_id=teacher_tid,
             notification_message=teacher_msg,
+            notification_file_id=file_id,
+            notification_file_type=file_type,
+            notification_file_name=file_name,
+            notification_caption=teacher_msg,
             state_transition="idle",
             metadata={"assignment_id": assignment.id, "submission_id": submission.id},
         )

@@ -16,6 +16,10 @@ class AgentResponse:
     action: str  # "reply" | "no_reply" | "notify_teacher" | "notify_student"
     notify_telegram_id: Optional[int] = None
     notification_message: Optional[str] = None
+    notification_file_id: Optional[str] = None
+    notification_file_type: Optional[str] = None
+    notification_file_name: Optional[str] = None
+    notification_caption: Optional[str] = None
     state_transition: Optional[str] = None  # new conversation state for the sender
     metadata: dict = field(default_factory=dict)
 
@@ -39,6 +43,10 @@ class BaseAgent(ABC):
         action: str = "reply",
         notify_telegram_id: Optional[int] = None,
         notification_message: Optional[str] = None,
+        notification_file_id: Optional[str] = None,
+        notification_file_type: Optional[str] = None,
+        notification_file_name: Optional[str] = None,
+        notification_caption: Optional[str] = None,
         state_transition: Optional[str] = None,
         metadata: Optional[dict] = None,
     ) -> AgentResponse:
@@ -48,6 +56,10 @@ class BaseAgent(ABC):
             action=action,
             notify_telegram_id=notify_telegram_id,
             notification_message=notification_message,
+            notification_file_id=notification_file_id,
+            notification_file_type=notification_file_type,
+            notification_file_name=notification_file_name,
+            notification_caption=notification_caption,
             state_transition=state_transition,
             metadata=metadata or {},
         )

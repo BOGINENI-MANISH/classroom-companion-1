@@ -522,15 +522,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             await db.flush()
 
         # Send notification to the other party
-        if response.notify_telegram_id and response.notification_message:
-            try:
-                await context.bot.send_message(
-                    chat_id=response.notify_telegram_id,
-                    text=response.notification_message,
-                    parse_mode="Markdown",
-                )
-            except Exception as exc:
-                logger.error(f"Failed to send notification to {response.notify_telegram_id}: {exc}")
+        if response.notify_telegram_id:
+            await _send_bot_notification(context, response.notify_telegram_id, response)
 
         # If teacher needs to be put into awaiting_feedback state, update it
         if (
@@ -541,6 +534,46 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             # Check if teacher state needs to be set (done inside StudentAgent already,
             # but update it here too in case the session was separate)
             pass
+
+
+async def _send_bot_notification(
+    context: ContextTypes.DEFAULT_TYPE,
+    chat_id: int,
+    response,
+) -> None:
+    try:
+        if response.notification_file_type == "photo" and response.notification_file_id:
+            await context.bot.send_photo(
+                chat_id=chat_id,
+                photo=response.notification_file_id,
+                caption=response.notification_caption or response.notification_message,
+                parse_mode="Markdown",
+            )
+            return
+        if response.notification_file_type == "document" and response.notification_file_id:
+            await context.bot.send_document(
+                chat_id=chat_id,
+                document=response.notification_file_id,
+                caption=response.notification_caption or response.notification_message,
+                parse_mode="Markdown",
+            )
+            return
+        if response.notification_file_type == "voice" and response.notification_file_id:
+            await context.bot.send_voice(
+                chat_id=chat_id,
+                voice=response.notification_file_id,
+                caption=response.notification_caption or response.notification_message,
+                parse_mode="Markdown",
+            )
+            return
+        if response.notification_message:
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text=response.notification_message,
+                parse_mode="Markdown",
+            )
+    except Exception as exc:
+        logger.error(f"Failed to send notification to {chat_id}: {exc}")
 
 
 # ── Document / Photo / Voice handlers ────────────────────────────────────────
@@ -566,15 +599,8 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
 
     await update.message.reply_text(response.message, parse_mode="Markdown")
-    if response.notify_telegram_id and response.notification_message:
-        try:
-            await context.bot.send_message(
-                chat_id=response.notify_telegram_id,
-                text=response.notification_message,
-                parse_mode="Markdown",
-            )
-        except Exception as exc:
-            logger.error(f"Failed to notify teacher of document submission: {exc}")
+    if response.notify_telegram_id:
+        await _send_bot_notification(context, response.notify_telegram_id, response)
 
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -598,15 +624,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
 
     await update.message.reply_text(response.message, parse_mode="Markdown")
-    if response.notify_telegram_id and response.notification_message:
-        try:
-            await context.bot.send_message(
-                chat_id=response.notify_telegram_id,
-                text=response.notification_message,
-                parse_mode="Markdown",
-            )
-        except Exception as exc:
-            logger.error(f"Failed to notify teacher of photo submission: {exc}")
+    if response.notify_telegram_id:
+        await _send_bot_notification(context, response.notify_telegram_id, response)
 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -627,15 +646,8 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
 
     await update.message.reply_text(response.message, parse_mode="Markdown")
-    if response.notify_telegram_id and response.notification_message:
-        try:
-            await context.bot.send_message(
-                chat_id=response.notify_telegram_id,
-                text=response.notification_message,
-                parse_mode="Markdown",
-            )
-        except Exception as exc:
-            logger.error(f"Failed to notify teacher of voice submission: {exc}")
+    if response.notify_telegram_id:
+        await _send_bot_notification(context, response.notify_telegram_id, response)
 
 
 # ── Application factory ───────────────────────────────────────────────────────
